@@ -1,0 +1,35 @@
+﻿@model MovieApp.Domain.Entities.Movie
+
+@{
+    ViewData["Title"] = "Movie Details";
+}
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h2>Movie Details</h2>
+        <div class="card">
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Title)</dt>
+                    <dd class="col-sm-9">@Html.DisplayFor(model => model.Title)</dd>
+
+                    <dt class="col-sm-3">@Html.DisplayNameFor(model => model.ReleaseDate)</dt>
+                    <dd class="col-sm-9">@Html.DisplayFor(model => model.ReleaseDate)</dd>
+
+                    <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Genre)</dt>
+                    <dd class="col-sm-9">@Html.DisplayFor(model => model.Genre)</dd>
+
+                    <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Price)</dt>
+                    <dd class="col-sm-9">@Html.DisplayFor(model => model.Price)</dd>
+
+                    <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Rating)</dt>
+                    <dd class="col-sm-9">@Html.DisplayFor(model => model.Rating)</dd>
+                </dl>
+            </div>
+            <div class="card-footer">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </div>
+    </div>
+</div>
