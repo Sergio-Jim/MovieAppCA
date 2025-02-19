@@ -47,7 +47,6 @@ namespace MovieApp.Infrastructure.Services
         {
             var user = new User
             {
-                UserName = email,
                 Email = email,
                 CreatedAt = DateTime.UtcNow
             };
