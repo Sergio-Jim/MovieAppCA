@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MovieApp.Domain.Entities;
 using MovieApp.Web.Models;
 using System.Diagnostics;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace MovieApp.Web.Controllers
 {

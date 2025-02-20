@@ -16,17 +16,14 @@ namespace MovieApp.Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            base.OnModelCreating(builder); // Ensures Identity tables are configured correctly
+            base.OnModelCreating(builder); // Configures Identity tables
 
             builder.Entity<User>(entity =>
             {
-                entity.Property(e => e.Id)
-                    .UseIdentityColumn(); // Ensures auto-incrementing primary key
-                entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
-                entity.Property(e => e.Password).IsRequired().HasMaxLength(100); // Changed from PasswordHash
-                entity.Property(e => e.FirstName).HasMaxLength(100);
-                entity.Property(e => e.LastName).HasMaxLength(100);
+                entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.CreatedAt).IsRequired();
+                // No need to configure Id, Email, or PasswordHash here unless overriding Identity defaults
             });
 
             builder.Entity<Movie>(entity =>

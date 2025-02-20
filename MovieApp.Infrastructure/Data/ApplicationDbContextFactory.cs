@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using System.IO;
 
 namespace MovieApp.Infrastructure.Data
 {
@@ -9,14 +8,17 @@ namespace MovieApp.Infrastructure.Data
     {
         public ApplicationDbContext CreateDbContext(string[] args)
         {
+            // Point to MovieApp.Web directory (one level up and into MovieApp.Web)
+            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "MovieApp.Web");
+
             var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
+                .SetBasePath(basePath)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
 
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
             var connectionString = configuration.GetConnectionString("DefaultConnection");
-            optionsBuilder.UseSqlServer(connectionString);
+            optionsBuilder.UseSqlServer(connectionString, b => b.MigrationsAssembly("MovieApp.Infrastructure"));
 
             return new ApplicationDbContext(optionsBuilder.Options);
         }
