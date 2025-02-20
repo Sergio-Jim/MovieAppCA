@@ -1,14 +1,21 @@
 ﻿@model IEnumerable<MovieApp.Domain.Entities.Movie>
+@using Microsoft.AspNetCore.Identity
+@using MovieApp.Domain.Entities
+@inject UserManager<User> UserManager
 
 @{
     ViewData["Title"] = "Movies";
+    var isAdmin = User.IsInRole("Admin");
 }
 
 <h1>Movies</h1>
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Create New</a>
-</p>
+@if (isAdmin)
+{
+    <p>
+        <a asp-action="Create" class="btn btn-primary">Create New</a>
+    </p>
+}
 
 <table class="table">
     <thead>
@@ -31,8 +38,10 @@
                 <td>@Html.DisplayFor(modelItem => item.Price)</td>
                 <td>@Html.DisplayFor(modelItem => item.Rating)</td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                    @if (isAdmin)
+                    {
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
                     <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@item.Id">
                         Delete
                     </button>
@@ -57,6 +66,7 @@
                             </div>
                         </div>
                     </div>
+                    }
                 </td>
             </tr>
         }

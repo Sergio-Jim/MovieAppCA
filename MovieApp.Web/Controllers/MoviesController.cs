@@ -5,7 +5,7 @@ using MovieApp.Domain.Entities;
 
 namespace MovieApp.Web.Controllers
 {
-    [Authorize]
+    [Authorize] // This ensures the user is logged in
     public class MoviesController : Controller
     {
         private readonly IMovieRepository _movieRepository;
@@ -15,12 +15,14 @@ namespace MovieApp.Web.Controllers
             _movieRepository = movieRepository;
         }
 
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var movies = await _movieRepository.GetAllAsync();
             return View(movies);
         }
 
+        [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
             var movie = await _movieRepository.GetByIdAsync(id);
@@ -31,13 +33,19 @@ namespace MovieApp.Web.Controllers
             return View(movie);
         }
 
+        // Restrict Create, Edit, Delete to Admin role only
+        // GET: Movies/Edit/{id} (Admin only)
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
         }
 
+        // POST: Movies/Edit/{id} (Admin only)
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("Title,ReleaseDate,Genre,Price,Rating")] Movie movie)
         {
             if (ModelState.IsValid)
@@ -48,6 +56,9 @@ namespace MovieApp.Web.Controllers
             return View(movie);
         }
 
+        // GET: Movies/Edit/{id} (Admin only)
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var movie = await _movieRepository.GetByIdAsync(id);
@@ -60,6 +71,7 @@ namespace MovieApp.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Title,ReleaseDate,Genre,Price,Rating")] Movie movie)
         {
             if (id != movie.Id)
@@ -75,8 +87,10 @@ namespace MovieApp.Web.Controllers
             return View(movie);
         }
 
+        // POST: Movies/Delete/{id} (Admin only)
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             await _movieRepository.DeleteAsync(id);

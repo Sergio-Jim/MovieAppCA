@@ -32,7 +32,7 @@ namespace MovieApp.Infrastructure.Services
                 loginDTO.Password,
                 loginDTO.RememberMe,
                 false);
-            
+
             if (result.Succeeded)
             {
                 user.LastLoginAt = DateTime.UtcNow;

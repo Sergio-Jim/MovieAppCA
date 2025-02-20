@@ -22,9 +22,8 @@ namespace MovieApp.Infrastructure.Data
             {
                 entity.Property(e => e.Id)
                     .UseIdentityColumn(); // Ensures auto-incrementing primary key
-
                 entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
-                entity.Property(e => e.PasswordHash).IsRequired();
+                entity.Property(e => e.Password).IsRequired().HasMaxLength(100); // Changed from PasswordHash
                 entity.Property(e => e.FirstName).HasMaxLength(100);
                 entity.Property(e => e.LastName).HasMaxLength(100);
                 entity.Property(e => e.CreatedAt).IsRequired();

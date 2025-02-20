@@ -12,7 +12,7 @@ using MovieApp.Infrastructure.Data;
 namespace MovieApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250219201849_InitialCreate")]
+    [Migration("20250220082654_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -245,8 +245,12 @@ namespace MovieApp.Infrastructure.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<string>("PasswordHash")
+                    b.Property<string>("Password")
                         .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
