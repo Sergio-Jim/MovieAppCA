@@ -24,6 +24,7 @@ builder.Services.AddIdentity<User, IdentityRole<int>>()
 // Add Application Services
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
+builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 
 // Configure cookie policy
 builder.Services.ConfigureApplicationCookie(options =>
@@ -42,6 +43,14 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     await DataSeeder.SeedDataAsync(scope.ServiceProvider);
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
+
+    await DataSeeder.SeedSuperAdmin(userManager, roleManager);
 }
 
 // Configure the HTTP request pipeline.

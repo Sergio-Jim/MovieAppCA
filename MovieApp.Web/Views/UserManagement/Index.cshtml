@@ -1,0 +1,102 @@
+﻿@model IEnumerable<MovieApp.Application.DTOs.UserManagementDTO>
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<div class="container">
+    <h2>User Management</h2>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Name</th>
+                <th>Current Role</th>
+                <th>Created At</th>
+                <th>Last Login</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>@user.FirstName @user.LastName</td>
+                    <td>
+                        <select class="form-select role-select" data-user-id="@user.Id">
+                            <option value="Viewer" selected="@(user.CurrentRole == "Viewer" ? "selected" : null)">Viewer</option>
+                            <option value="Admin" selected="@(user.CurrentRole == "Admin" ? "selected" : null)">Admin</option>
+                            <option value="SuperAdmin" selected="@(user.CurrentRole == "SuperAdmin" ? "selected" : null)">Super Admin</option>
+                        </select>
+                    </td>
+                    <td>@user.CreatedAt.ToString("yyyy-MM-dd")</td>
+                    <td>@(user.LastLoginAt?.ToString("yyyy-MM-dd") ?? "Never")</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm delete-user" data-user-id="@user.Id">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Handle role changes
+            $('.role-select').change(function() {
+                const userId = $(this).data('user-id');
+                const newRole = $(this).val();
+                
+                $.ajax({
+                    url: '@Url.Action("UpdateRole", "UserManagement")',
+                    type: 'POST',
+                    data: JSON.stringify({ userId: userId, newRole: newRole }),
+                    contentType: 'application/json',
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            toastr.success('Role updated successfully');
+                        } else {
+                            toastr.error('Failed to update role');
+                        }
+                    },
+                    error: function() {
+                        toastr.error('An error occurred while updating the role');
+                    }
+                });
+            });
+
+            // Handle user deletion
+            $('.delete-user').click(function() {
+                const userId = $(this).data('user-id');
+                if (confirm('Are you sure you want to delete this user?')) {
+                    $.ajax({
+                        url: '@Url.Action("DeleteUser", "UserManagement")',
+                        type: 'POST',
+                        data: { userId: userId },
+                        headers: {
+                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                toastr.success('User deleted successfully');
+                                location.reload();
+                            } else {
+                                toastr.error('Failed to delete user');
+                            }
+                        },
+                        error: function() {
+                            toastr.error('An error occurred while deleting the user');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

@@ -34,7 +34,7 @@ namespace MovieApp.Infrastructure.Data
 
         private static async Task SeedRolesAsync(RoleManager<IdentityRole<int>> roleManager)
         {
-            string[] roleNames = { "Admin", "Viewer" };
+            string[] roleNames = { "SuperAdmin", "Admin", "Viewer" };
             foreach (var roleName in roleNames)
             {
                 if (!await roleManager.RoleExistsAsync(roleName))
@@ -91,6 +91,47 @@ namespace MovieApp.Infrastructure.Data
                 else
                 {
                     throw new Exception($"Failed to create viewer user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
+            }
+        }
+
+        public static async Task SeedSuperAdmin(
+            UserManager<User> userManager,
+            RoleManager<IdentityRole<int>> roleManager)
+        {
+            // First ensure the SuperAdmin role exists
+            if (!await roleManager.RoleExistsAsync("SuperAdmin"))
+            {
+                await roleManager.CreateAsync(new IdentityRole<int>("SuperAdmin"));
+            }
+
+            // Check if super admin already exists
+            var superAdminEmail = "superadmin@movieapp.com";
+            var existingSuperAdmin = await userManager.FindByEmailAsync(superAdminEmail);
+
+            if (existingSuperAdmin == null)
+            {
+                var superAdmin = new User
+                {
+                    UserName = superAdminEmail,
+                    Email = superAdminEmail,
+                    FirstName = "Super",
+                    LastName = "Admin",
+                    EmailConfirmed = true,
+                    CreatedAt = DateTime.UtcNow,
+                    LastLoginAt = null
+                };
+
+                var result = await userManager.CreateAsync(superAdmin, "SuperAdmin123!");
+
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(superAdmin, "SuperAdmin");
+                }
+                else
+                {
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    throw new Exception($"Failed to seed super admin user: {errors}");
                 }
             }
         }
