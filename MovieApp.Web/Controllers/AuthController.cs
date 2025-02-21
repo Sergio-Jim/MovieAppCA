@@ -42,6 +42,40 @@ namespace MovieApp.Web.Controllers
             return View(model);
         }
 
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterDTO model)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _identityService.RegisterViewerAsync(model);
+                if (result.Succeeded)
+                {
+                    // Automatically log in the user after registration
+                    await _identityService.LoginAsync(new LoginDTO
+                    {
+                        Email = model.Email,
+                        Password = model.Password,
+                        RememberMe = false
+                    });
+
+                    return RedirectToAction("Index", "Home");
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error);
+                }
+            }
+
+            return View(model);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Logout()
         {

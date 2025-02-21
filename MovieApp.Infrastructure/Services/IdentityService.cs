@@ -43,18 +43,22 @@ namespace MovieApp.Infrastructure.Services
             return (false, new[] { "Invalid login attempt" });
         }
 
-        public async Task<(bool Succeeded, string[] Errors)> RegisterAsync(string email, string password)
+        public async Task<(bool Succeeded, string[] Errors)> RegisterViewerAsync(RegisterDTO registerDto)
         {
             var user = new User
             {
-                Email = email,
-                CreatedAt = DateTime.UtcNow
+                UserName = registerDto.Email,
+                Email = registerDto.Email,
+                FirstName = registerDto.FirstName,
+                LastName = registerDto.LastName,
+                CreatedAt = DateTime.UtcNow,
+                EmailConfirmed = true // For simplicity, you might want to add email confirmation later
             };
 
-            var result = await _userManager.CreateAsync(user, password);
-
+            var result = await _userManager.CreateAsync(user, registerDto.Password);
             if (result.Succeeded)
             {
+                await _userManager.AddToRoleAsync(user, "Viewer");
                 return (true, Array.Empty<string>());
             }
 
