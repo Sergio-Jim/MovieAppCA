@@ -38,6 +38,9 @@
                 <td>@Html.DisplayFor(modelItem => item.Price)</td>
                 <td>@Html.DisplayFor(modelItem => item.Rating)</td>
                 <td>
+                    <form asp-action="Watch" asp-route-id="@item.Id" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-sm btn-success">Watch</button>
+                    </form>
                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
                     @if (isAdmin)
                     {

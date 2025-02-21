@@ -22,6 +22,19 @@ namespace MovieApp.Web.Controllers
             return View(movies);
         }
 
+        // Watching Movie
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Watch(int id)
+        {
+            var movie = await _movieRepository.GetByIdAsync(id);
+            if (movie == null)
+            {
+                return NotFound();
+            }
+            return Content($"Watching {movie.Title}");
+        }
+
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {

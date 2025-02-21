@@ -27,7 +27,15 @@
                 </dl>
             </div>
             <div class="card-footer">
-                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+                <form asp-action="Watch" asp-route-id="@Model.Id" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-success">Watch</button>
+                </form>
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+                }
+
                 <a asp-action="Index" class="btn btn-secondary">Back to List</a>
             </div>
         </div>

@@ -1,45 +1,29 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using MovieApp.Application.Interfaces;    // For IMovieRepository
 using MovieApp.Domain.Entities;
 using MovieApp.Web.Models;
 using System.Diagnostics;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace MovieApp.Web.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IMovieRepository _movieRepository;
 
-        public HomeController(ILogger<HomeController> logger)
+        // Inject the repository in the constructor
+        public HomeController(ILogger<HomeController> logger, IMovieRepository movieRepository)
         {
             _logger = logger;
+            _movieRepository = movieRepository;
         }
 
-        public IActionResult Index()
+        // Fetch the list of movies here
+        public async Task<IActionResult> Index()
         {
-            return View();
-        }
-
-        //testing
-        [HttpGet]
-        public async Task<IActionResult> TestUserCreation([FromServices] UserManager<User> userManager)
-        {
-            var user = new User
-            {
-                UserName = "TestUser",
-                Email = "test@movieapp.com",
-                FirstName = "Test",
-                LastName = "User",
-                CreatedAt = DateTime.UtcNow,
-                EmailConfirmed = true
-            };
-            var result = await userManager.CreateAsync(user, "Test@123!");
-            if (result.Succeeded)
-            {
-                return Content("User created successfully!");
-            }
-            return Content($"Failed: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+            var movies = await _movieRepository.GetAllAsync();
+            return View(movies); // Pass them to the view
         }
 
         public IActionResult Privacy()
