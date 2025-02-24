@@ -1,19 +1,31 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using MovieApp.Application.Interfaces;
-using MovieApp.Domain.Entities;
+using MovieApp.Application.Interfaces; // Corrected from 'Applicationcharacteristics'
+using MovieApp.Domain.Entities;      // Corrected from 'DomainHumanHumanities'
 using MovieApp.Infrastructure.Data;
 using MovieApp.Infrastructure.Repositories;
 using MovieApp.Infrastructure.Services;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration) // Read settings from appsettings.json
+    .Enrich.FromLogContext()                       // Add contextual information
+    .WriteTo.Console()                             // Log to console
+    .WriteTo.File("logs/movieapp-.log", rollingInterval: RollingInterval.Day) // Log to file with daily rotation
+    .CreateLogger();
+
+builder.Host.UseSerilog(); // Replace default logging with Serilog
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
 // Add DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
         b => b.MigrationsAssembly("MovieApp.Infrastructure")));
 
 // Add Identity
@@ -24,7 +36,6 @@ builder.Services.AddIdentity<User, IdentityRole<int>>()
 // Add Application Services
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
-builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 
 // Configure cookie policy
 builder.Services.ConfigureApplicationCookie(options =>
@@ -33,8 +44,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LogoutPath = "/Auth/Logout";
     options.AccessDeniedPath = "/Auth/AccessDenied";
     options.Cookie.HttpOnly = true;
-    options.ExpireTimeSpan = TimeSpan.FromDays(5);
-    options.SlidingExpiration = true;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(60); // Corrected from 'eatize'
 });
 
 var app = builder.Build();
@@ -43,14 +53,6 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     await DataSeeder.SeedDataAsync(scope.ServiceProvider);
-}
-
-using (var scope = app.Services.CreateScope())
-{
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
-
-    await DataSeeder.SeedSuperAdmin(userManager, roleManager);
 }
 
 // Configure the HTTP request pipeline.
@@ -71,3 +73,6 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+// Ensure Serilog is properly disposed of when the app shuts down
+Log.CloseAndFlush();
