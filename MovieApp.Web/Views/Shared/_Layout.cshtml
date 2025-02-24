@@ -41,7 +41,7 @@
                         {
                             var user = await UserManager.GetUserAsync(User);
                             <li class="nav-item">
-                                <span class="nav-link text-dark"> @user.FirstName </span>
+                                <span class="nav-link text-dark"> Hello: @user.FirstName </span>
                             </li>
                             <li class="nav-item">
                                 <form asp-controller="Auth" asp-action="Logout" method="post" id="logoutForm">

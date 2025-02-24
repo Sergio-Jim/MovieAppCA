@@ -11,10 +11,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration) // Read settings from appsettings.json
-    .Enrich.FromLogContext()                       // Add contextual information
-    .WriteTo.Console()                             // Log to console
-    .WriteTo.File("logs/movieapp-.log", rollingInterval: RollingInterval.Day) // Log to file with daily rotation
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.Async(a => a.File("logs/movieapp-.log",
+        rollingInterval: RollingInterval.Day,
+        buffered: true,
+        rollOnFileSizeLimit: true,
+        fileSizeLimitBytes: 10_485_760)) // 10MB limit
     .CreateLogger();
 
 builder.Host.UseSerilog(); // Replace default logging with Serilog
@@ -33,9 +37,10 @@ builder.Services.AddIdentity<User, IdentityRole<int>>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// Add Application Services
+// Add Application Services (Scopes)
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
+builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 
 // Configure cookie policy
 builder.Services.ConfigureApplicationCookie(options =>

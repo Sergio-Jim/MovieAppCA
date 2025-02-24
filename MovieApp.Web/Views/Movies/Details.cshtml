@@ -31,7 +31,7 @@
                     <button type="submit" class="btn btn-success">Watch</button>
                 </form>
 
-                @if (User.IsInRole("Admin"))
+                @if (User?.IsInRole("Admin") == true || User?.IsInRole("SuperAdmin") == true)
                 {
                     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
                 }

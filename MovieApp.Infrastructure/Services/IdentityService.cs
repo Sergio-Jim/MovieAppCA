@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using MovieApp.Application.DTOs;
 using MovieApp.Application.Interfaces;
 using MovieApp.Domain.Entities;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MovieApp.Infrastructure.Services
 {
@@ -9,25 +11,29 @@ namespace MovieApp.Infrastructure.Services
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly ILogger<IdentityService> _logger;
 
         public IdentityService(
             UserManager<User> userManager,
-            SignInManager<User> signInManager)
+            SignInManager<User> signInManager,
+            ILogger<IdentityService> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _logger = logger;
         }
 
-        public async Task<(bool Succeeded, string[] Errors)> LoginAsync(LoginDTO loginDTO)
+    public async Task<(bool Succeeded, string[] Errors)> LoginAsync(LoginDTO loginDTO)
         {
             var user = await _userManager.FindByEmailAsync(loginDTO.Email);
 
-            if (user == null)
-            {
-                return (false, new[] { "User not found" });
-            }
+        if (user == null)
+        {
+            _logger.LogWarning("User not found for email: {Email}", loginDTO.Email);
+            return (false, new[] { "User not found" });
+        }
 
-            var result = await _signInManager.PasswordSignInAsync(
+        var result = await _signInManager.PasswordSignInAsync(
                 user,
                 loginDTO.Password,
                 loginDTO.RememberMe,
@@ -37,14 +43,17 @@ namespace MovieApp.Infrastructure.Services
             {
                 user.LastLoginAt = DateTime.UtcNow;
                 await _userManager.UpdateAsync(user);
+                _logger.LogInformation("User {Email} logged in successfully", loginDTO.Email);
                 return (true, Array.Empty<string>());
             }
 
+            _logger.LogWarning("Invalid login attempt for email: {Email}", loginDTO.Email);
             return (false, new[] { "Invalid login attempt" });
         }
 
         public async Task<(bool Succeeded, string[] Errors)> RegisterViewerAsync(RegisterDTO registerDto)
         {
+            _logger.LogInformation("Register attempt for email: {Email}", registerDto.Email);
             var user = new User
             {
                 UserName = registerDto.Email,
@@ -58,16 +67,19 @@ namespace MovieApp.Infrastructure.Services
             var result = await _userManager.CreateAsync(user, registerDto.Password);
             if (result.Succeeded)
             {
+                _logger.LogInformation("User {Email} registered successfully", registerDto.Email);
                 await _userManager.AddToRoleAsync(user, "Viewer");
                 return (true, Array.Empty<string>());
             }
 
+            _logger.LogError("Failed to register user {Email}. Errors: {@Errors}", registerDto.Email, result.Errors);
             return (false, result.Errors.Select(e => e.Description).ToArray());
         }
 
         public async Task LogoutAsync()
         {
             await _signInManager.SignOutAsync();
+            _logger.LogInformation("User logged out");
         }
     }
 }

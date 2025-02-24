@@ -1,21 +1,25 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MovieApp.Application.DTOs;
 using MovieApp.Application.Interfaces;
+using MovieApp.Infrastructure.Services;
 
 namespace MovieApp.Web.Controllers
 {
     public class AuthController : Controller
     {
         private readonly IIdentityService _identityService;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IIdentityService identityService)
+        public AuthController(IIdentityService identityService, ILogger<AuthController> logger)
         {
             _identityService = identityService;
+            _logger = logger;
         }
 
         [HttpGet]
         public IActionResult Login()
         {
+            _logger.LogInformation("Displaying login page");
             return View();
         }
 
@@ -24,6 +28,7 @@ namespace MovieApp.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Invalid model state for login attempt");
                 return View(model);
             }
 
@@ -31,6 +36,7 @@ namespace MovieApp.Web.Controllers
 
             if (result.Succeeded)
             {
+                _logger.LogInformation("Redirecting to home after successful login");
                 return RedirectToAction("Index", "Home");
             }
 
@@ -39,6 +45,8 @@ namespace MovieApp.Web.Controllers
                 ModelState.AddModelError(string.Empty, error);
             }
 
+            _logger.LogWarning("Login failed: {Errors}", string.Join(", ", result.Errors));
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             return View(model);
         }
 
