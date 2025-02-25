@@ -55,7 +55,7 @@ namespace MovieApp.Web.Controllers
         // Restrict Create, Edit, Delete to Admin role only
         // GET: Movies/Edit/{id} (Admin only)
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public IActionResult Create()
         {
             return View();
@@ -64,7 +64,7 @@ namespace MovieApp.Web.Controllers
         // POST: Movies/Edit/{id} (Admin only)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> Create([Bind("Title,ReleaseDate,Genre,Price,Rating")] Movie movie)
         {
             if (ModelState.IsValid)
@@ -80,7 +80,7 @@ namespace MovieApp.Web.Controllers
 
         // GET: Movies/Edit/{id} (Admin only)
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> Edit(int id)
         {
             var movie = await _movieRepository.GetByIdAsync(id);
@@ -93,7 +93,7 @@ namespace MovieApp.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Title,ReleaseDate,Genre,Price,Rating")] Movie movie)
         {
             if (id != movie.Id)
@@ -103,9 +103,23 @@ namespace MovieApp.Web.Controllers
 
             if (ModelState.IsValid)
             {
-                await _movieRepository.UpdateAsync(movie);
+                var existingMovie = await _movieRepository.GetByIdAsync(id); // Fetch the tracked movie
+                if (existingMovie == null)
+                {
+                    return NotFound();
+                }
+
+                // Update the tracked entity with the new values
+                existingMovie.Title = movie.Title;
+                existingMovie.ReleaseDate = movie.ReleaseDate;
+                existingMovie.Genre = movie.Genre;
+                existingMovie.Price = movie.Price;
+                existingMovie.Rating = movie.Rating;
+
+                await _movieRepository.UpdateAsync(existingMovie); // Update the tracked entity
                 var user = await _userManager.GetUserAsync(User);
-                await _auditService.LogAsync(user.Id, "UpdateMovie", "Movie", movie.Id, $"Updated movie: {movie.Title}");
+                await _auditService.LogAsync(user.Id, "UpdateMovie", "Movie", movie.Id,
+                    $"Updated movie: {movie.Title}", movie, existingMovie); // Previous state is the old values, current is the new
                 return RedirectToAction(nameof(Index));
             }
             return View(movie);
@@ -114,15 +128,16 @@ namespace MovieApp.Web.Controllers
         // POST: Movies/Delete/{id} (Admin only)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> Delete(int id)
         {
             var movie = await _movieRepository.GetByIdAsync(id);
             if (movie != null)
             {
-                await _movieRepository.DeleteAsync(id);
                 var user = await _userManager.GetUserAsync(User);
-                await _auditService.LogAsync(user.Id, "DeleteMovie", "Movie", id, $"Deleted movie: {movie.Title}");
+                await _auditService.LogAsync(user.Id, "DeleteMovie", "Movie", id,
+                    $"Deleted movie: {movie.Title}", movie, null); // Previous state (movie), no current state
+                await _movieRepository.DeleteAsync(id);
             }
             return RedirectToAction(nameof(Index));
         }

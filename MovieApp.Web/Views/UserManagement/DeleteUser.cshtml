@@ -1,0 +1,34 @@
+﻿@model MovieApp.Application.DTOs.UserDeletionConfirmationDTO
+@{
+    ViewData["Title"] = "Confirm User Deletion";
+}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h2>Confirm User Deletion</h2>
+        <p>Are you sure you want to delete the user with ID: @Model.UserId? This action cannot be undone.</p>
+        <p>Please confirm with your SuperAdmin credentials.</p>
+        <form asp-action="DeleteUser" method="post">
+            <input type="hidden" asp-for="UserId" />
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="form-group mb-3">
+                <label asp-for="SuperAdminEmail" class="form-label">SuperAdmin Email</label>
+                <input asp-for="SuperAdminEmail" class="form-control" />
+                <span asp-validation-for="SuperAdminEmail" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="SuperAdminPassword" class="form-label">SuperAdmin Password</label>
+                <input asp-for="SuperAdminPassword" class="form-control" type="password" />
+                <span asp-validation-for="SuperAdminPassword" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

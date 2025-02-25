@@ -18,18 +18,18 @@ namespace MovieApp.Infrastructure.Services
         }
 
         public async Task LogAsync(int userId, string action, string entityType, int? entityId,
-            string details, object previousState = null, object currentState = null)
+    string details, object previousState = null, object currentState = null)
         {
-            var truncatedDetails = details.Length > 500 ? details.Substring(0, 500) : details;
+            var truncatedDetails = details ?? ""; // Default to empty string if null
             var auditLog = new AuditLog
             {
                 UserId = userId,
-                Action = action,
-                EntityType = entityType,
+                Action = action ?? "", // Default to empty string if null
+                EntityType = entityType ?? "", // Default to empty string if null
                 EntityId = entityId,
                 PreviousState = previousState != null ? JsonSerializer.Serialize(previousState) : null,
                 CurrentState = currentState != null ? JsonSerializer.Serialize(currentState) : null,
-                Details = truncatedDetails,
+                Details = truncatedDetails.Length > 500 ? truncatedDetails.Substring(0, 500) : truncatedDetails,
                 Timestamp = DateTime.UtcNow
             };
 
@@ -38,12 +38,12 @@ namespace MovieApp.Infrastructure.Services
                 _context.AuditLogs.Add(auditLog);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Audit log recorded: User {UserId} performed {Action} on {EntityType} (ID: {EntityId}) - {Details}",
-                    userId, action, entityType, entityId, truncatedDetails);
+                    userId, action ?? "", entityType ?? "", entityId, truncatedDetails);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to save audit log");
-                throw; // Or handle differently based on your needs
+                throw;
             }
         }
     }

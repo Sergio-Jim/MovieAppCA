@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using MovieApp.Application.Interfaces; // Corrected from 'Applicationcharacteristics'
 using MovieApp.Domain.Entities;      // Corrected from 'DomainHumanHumanities'
 using MovieApp.Infrastructure.Data;
-using MovieApp.Infrastructure.Repositories;
 using MovieApp.Infrastructure.Services;
 using Serilog;
 

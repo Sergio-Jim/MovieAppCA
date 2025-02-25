@@ -183,24 +183,50 @@ namespace MovieApp.Web.Controllers
             return View(model);
         }
 
+        //Delete user with confirmation
+        [HttpGet]
+        public IActionResult DeleteUser(int userId)
+        {
+            var model = new UserDeletionConfirmationDTO
+            {
+                UserId = userId
+            };
+            return View(model);
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteUser(int userId)
+        public async Task<IActionResult> DeleteUser(UserDeletionConfirmationDTO model)
         {
-            _logger.LogInformation("SuperAdmin attempting to delete user ID {UserId}", userId);
-            var result = await _userManagementService.DeleteUserAsync(userId);
-            var currentUser = await _userManager.GetUserAsync(User);
+            if (!ModelState.IsValid)
+            {
+                return Json(new { success = false, errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
+            }
+
+            var superAdmin = await _userManager.FindByEmailAsync(model.SuperAdminEmail);
+            if (superAdmin == null || !await _userManager.IsInRoleAsync(superAdmin, "SuperAdmin"))
+            {
+                return Json(new { success = false, errors = new[] { "Invalid SuperAdmin email." } });
+            }
+
+            var passwordCheck = await _signInManager.CheckPasswordSignInAsync(superAdmin, model.SuperAdminPassword, false);
+            if (!passwordCheck.Succeeded)
+            {
+                return Json(new { success = false, errors = new[] { "Invalid SuperAdmin password." } });
+            }
+
+            var user = await _userManager.FindByIdAsync(model.UserId.ToString()); // Fetch user before deletion
+            var result = await _userManagementService.DeleteUserAsync(model.UserId);
             if (result)
             {
-                await _auditService.LogAsync(currentUser.Id, "DeleteUser", "User", userId, "User deleted");
-                _logger.LogInformation("User ID {UserId} deleted successfully", userId);
+                await _auditService.LogAsync(superAdmin.Id, "DeleteUser", "User", model.UserId,
+                    $"Deleted user: {user?.Email ?? "Unknown"}", user, null); // Previous state (user), no current state
+                _logger.LogInformation("User ID {UserId} deleted successfully", model.UserId);
+                return Json(new { success = true, message = "User deleted successfully." });
             }
-            else
-            {
-                _logger.LogWarning("Failed to delete user ID {UserId}", userId);
-            }
-            return Json(new { success = result });
+
+            _logger.LogWarning("Failed to delete user ID {UserId}", model.UserId);
+            return Json(new { success = false, errors = new[] { "Failed to delete user." } });
         }
     }
 }

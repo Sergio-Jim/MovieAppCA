@@ -1,4 +1,4 @@
-﻿@model IEnumerable<MovieApp.Domain.Entities.AuditLog>
+﻿@model IEnumerable<MovieApp.Web.Models.AuditLogViewModel>
 @{
     ViewData["Title"] = "Audit Logs";
 }
@@ -21,12 +21,12 @@
         {
             <tr>
                 <td>@log.UserId</td>
-                <td>@(log.Action ?? "N/A")</td>
-                <td>@(log.EntityType ?? "N/A")</td>
+                <td>@log.Action</td>
+                <td>@log.EntityType</td>
                 <td>@log.EntityId</td>
-                <td>@(log.PreviousState ?? "N/A")</td>
-                <td>@(log.CurrentState ?? "N/A")</td>
-                <td>@(log.Details ?? "N/A")</td>
+                <td>@Html.Raw(log.PreviousState)</td>
+                <td>@Html.Raw(log.CurrentState)</td>
+                <td>@log.Details</td>
                 <td>@log.Timestamp</td>
             </tr>
         }
