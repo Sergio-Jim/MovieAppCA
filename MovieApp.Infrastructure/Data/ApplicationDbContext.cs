@@ -13,6 +13,7 @@ namespace MovieApp.Infrastructure.Data
         }
 
         public DbSet<Movie> Movies { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -33,6 +34,16 @@ namespace MovieApp.Infrastructure.Data
                 entity.Property(e => e.Genre).IsRequired().HasMaxLength(30);
                 entity.Property(e => e.Rating).IsRequired().HasMaxLength(5);
                 entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
+            });
+
+            builder.Entity<AuditLog>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.UserId).IsRequired();
+                entity.Property(e => e.Action).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.EntityType).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Details).HasMaxLength(500); // Optional, limit length
+                entity.Property(e => e.Timestamp).IsRequired();
             });
         }
     }

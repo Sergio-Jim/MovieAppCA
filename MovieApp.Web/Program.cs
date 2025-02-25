@@ -41,6 +41,7 @@ builder.Services.AddIdentity<User, IdentityRole<int>>()
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+builder.Services.AddScoped<IAuditService, AuditService>();
 
 // Configure cookie policy
 builder.Services.ConfigureApplicationCookie(options =>

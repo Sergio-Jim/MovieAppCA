@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using MovieApp.Application.DTOs;
 using MovieApp.Application.Interfaces;
+using MovieApp.Domain.Entities;
 using MovieApp.Infrastructure.Services;
 
 namespace MovieApp.Web.Controllers
@@ -8,12 +10,20 @@ namespace MovieApp.Web.Controllers
     public class AuthController : Controller
     {
         private readonly IIdentityService _identityService;
+        private readonly IAuditService _auditService; // Added audit interface
         private readonly ILogger<AuthController> _logger;
+        private readonly UserManager<User> _userManager;
 
-        public AuthController(IIdentityService identityService, ILogger<AuthController> logger)
+        public AuthController(
+            IIdentityService identityService, 
+            IAuditService auditService,
+            ILogger<AuthController> logger, 
+            UserManager<User> userManager)
         {
             _identityService = identityService;
+            _auditService = auditService;
             _logger = logger;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -36,6 +46,8 @@ namespace MovieApp.Web.Controllers
 
             if (result.Succeeded)
             {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                await _auditService.LogAsync(user.Id, "Login", "User", user.Id, $"User {model.Email} logged in");
                 _logger.LogInformation("Redirecting to home after successful login");
                 return RedirectToAction("Index", "Home");
             }
@@ -64,6 +76,8 @@ namespace MovieApp.Web.Controllers
                 var result = await _identityService.RegisterViewerAsync(model);
                 if (result.Succeeded)
                 {
+                    var user = await _userManager.FindByEmailAsync(model.Email);
+                    await _auditService.LogAsync(user.Id, "Register", "User", user.Id, $"User {model.Email} registered");
                     // Automatically log in the user after registration
                     await _identityService.LoginAsync(new LoginDTO
                     {
@@ -87,6 +101,11 @@ namespace MovieApp.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                await _auditService.LogAsync(user.Id, "Logout", "User", user.Id, $"User {user.Email} logged out");
+            }
             await _identityService.LogoutAsync();
             return RedirectToAction("Login");
         }

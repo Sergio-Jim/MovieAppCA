@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MovieApp.Application.Interfaces;
 using MovieApp.Domain.Entities;
+using MovieApp.Infrastructure.Services;
 
 namespace MovieApp.Web.Controllers
 {
@@ -9,10 +11,14 @@ namespace MovieApp.Web.Controllers
     public class MoviesController : Controller
     {
         private readonly IMovieRepository _movieRepository;
+        private readonly IAuditService _auditService;
+        private readonly UserManager<User> _userManager;
 
-        public MoviesController(IMovieRepository movieRepository)
+        public MoviesController(IMovieRepository movieRepository, IAuditService auditService, UserManager<User> userManager)
         {
             _movieRepository = movieRepository;
+            _auditService = auditService;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -63,7 +69,9 @@ namespace MovieApp.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _movieRepository.CreateAsync(movie);
+                var createdMovie = await _movieRepository.CreateAsync(movie);
+                var user = await _userManager.GetUserAsync(User);
+                await _auditService.LogAsync(user.Id, "CreateMovie", "Movie", createdMovie.Id, $"Created movie: {movie.Title}");
                 return RedirectToAction(nameof(Index));
             }
             return View(movie);
@@ -95,6 +103,8 @@ namespace MovieApp.Web.Controllers
             if (ModelState.IsValid)
             {
                 await _movieRepository.UpdateAsync(movie);
+                var user = await _userManager.GetUserAsync(User);
+                await _auditService.LogAsync(user.Id, "UpdateMovie", "Movie", movie.Id, $"Updated movie: {movie.Title}");
                 return RedirectToAction(nameof(Index));
             }
             return View(movie);
@@ -106,7 +116,13 @@ namespace MovieApp.Web.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _movieRepository.DeleteAsync(id);
+            var movie = await _movieRepository.GetByIdAsync(id);
+            if (movie != null)
+            {
+                await _movieRepository.DeleteAsync(id);
+                var user = await _userManager.GetUserAsync(User);
+                await _auditService.LogAsync(user.Id, "DeleteMovie", "Movie", id, $"Deleted movie: {movie.Title}");
+            }
             return RedirectToAction(nameof(Index));
         }
     }
