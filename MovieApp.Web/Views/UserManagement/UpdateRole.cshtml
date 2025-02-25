@@ -1,0 +1,35 @@
+﻿@model MovieApp.Application.DTOs.RoleUpdateConfirmationDTO
+@{
+    ViewData["Title"] = "Confirm Role Update";
+}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h2>Confirm Role Update</h2>
+        <p>Please confirm the role assignment for User ID: @Model.UserId with your SuperAdmin credentials.</p>
+        <p>New Roles: @Model.NewRole</p>
+        <form asp-action="UpdateRole" method="post">
+            <input type="hidden" asp-for="UserId" />
+            <input type="hidden" asp-for="NewRole" />
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="form-group mb-3">
+                <label asp-for="SuperAdminEmail" class="form-label">SuperAdmin Email</label>
+                <input asp-for="SuperAdminEmail" class="form-control" />
+                <span asp-validation-for="SuperAdminEmail" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="SuperAdminPassword" class="form-label">SuperAdmin Password</label>
+                <input asp-for="SuperAdminPassword" class="form-control" type="password" />
+                <span asp-validation-for="SuperAdminPassword" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Confirm and Save</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

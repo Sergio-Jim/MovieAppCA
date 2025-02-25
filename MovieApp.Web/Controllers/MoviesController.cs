@@ -71,7 +71,8 @@ namespace MovieApp.Web.Controllers
             {
                 var createdMovie = await _movieRepository.CreateAsync(movie);
                 var user = await _userManager.GetUserAsync(User);
-                await _auditService.LogAsync(user.Id, "CreateMovie", "Movie", createdMovie.Id, $"Created movie: {movie.Title}");
+                await _auditService.LogAsync(user.Id, "CreateMovie", "Movie", createdMovie.Id,
+                    $"Created movie: {movie.Title}", null, movie); // null for previous state, movie as current state
                 return RedirectToAction(nameof(Index));
             }
             return View(movie);

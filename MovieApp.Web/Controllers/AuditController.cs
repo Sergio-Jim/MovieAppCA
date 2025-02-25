@@ -15,7 +15,9 @@ public class AuditController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var logs = await _context.AuditLogs.OrderByDescending(a => a.Timestamp).ToListAsync();
+        var logs = await _context.AuditLogs
+            .OrderByDescending(a => a.Timestamp)
+            .ToListAsync();
         return View(logs);
     }
 }

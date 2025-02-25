@@ -40,7 +40,7 @@ namespace MovieApp.Infrastructure.Services
                     Email = user.Email,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
-                    CurrentRole = roles.FirstOrDefault() ?? "No Role",
+                    CurrentRoles = roles.ToList(), // Return all roles as a list
                     CreatedAt = user.CreatedAt,
                     LastLoginAt = user.LastLoginAt
                 });
@@ -49,32 +49,38 @@ namespace MovieApp.Infrastructure.Services
             return userDtos;
         }
 
-        public async Task<bool> UpdateUserRoleAsync(UpdateUserRoleDTO updateRoleDto)
+        public async Task<bool> UpdateUserRoleAsync(int userId, List<string> newRoles)
         {
-            _logger.LogInformation("Attempting to update role for user ID {UserId} to {NewRole}",
-                updateRoleDto.UserId, updateRoleDto.NewRole);
-
-            var user = await _userManager.FindByIdAsync(updateRoleDto.UserId.ToString());
+            _logger.LogInformation("Attempting to update roles for user ID {UserId} to {NewRoles}", userId, string.Join(", ", newRoles));
+            var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user == null)
             {
-                _logger.LogWarning("User with ID {UserId} not found", updateRoleDto.UserId);
+                _logger.LogWarning("User with ID {UserId} not found", userId);
                 return false;
             }
 
             var currentRoles = await _userManager.GetRolesAsync(user);
-            await _userManager.RemoveFromRolesAsync(user, currentRoles);
+            var rolesToAdd = newRoles.Except(currentRoles).ToList();
+            var rolesToRemove = currentRoles.Except(newRoles).ToList();
 
-            var result = await _userManager.AddToRoleAsync(user, updateRoleDto.NewRole);
-            if (result.Succeeded)
+            // Add new roles
+            foreach (var role in rolesToAdd)
             {
-                _logger.LogInformation("Successfully updated role for user ID {UserId} to {NewRole}",
-                    updateRoleDto.UserId, updateRoleDto.NewRole);
-                return true;
+                if (!await _roleManager.RoleExistsAsync(role))
+                {
+                    await _roleManager.CreateAsync(new IdentityRole<int> { Name = role });
+                }
+                await _userManager.AddToRoleAsync(user, role);
             }
 
-            _logger.LogError("Failed to update role for user ID {UserId}. Errors: {@Errors}",
-                updateRoleDto.UserId, result.Errors.Select(e => e.Description));
-            return false;
+            // Remove deselected roles
+            foreach (var role in rolesToRemove)
+            {
+                await _userManager.RemoveFromRoleAsync(user, role);
+            }
+
+            _logger.LogInformation("Successfully updated roles for user ID {UserId}", userId);
+            return true;
         }
 
         public async Task<bool> DeleteUserAsync(int userId)

@@ -6,14 +6,11 @@ namespace MovieApp.Domain.Entities
     public class User : IdentityUser<int>
     {
         [Required]
-        public string FirstName { get; set; }
-
+        public required string FirstName { get; set; } // Use 'required' instead of nullable
         [Required]
-        public string LastName { get; set; }
-
+        public required string LastName { get; set; } // Use 'required' instead of nullable
         [Required]
         public DateTime CreatedAt { get; set; }
-
         public DateTime? LastLoginAt { get; set; }
     }
 }

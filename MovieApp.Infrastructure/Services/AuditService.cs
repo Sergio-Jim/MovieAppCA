@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using MovieApp.Application.Interfaces;
 using MovieApp.Domain.Entities;
 using MovieApp.Infrastructure.Data;
@@ -16,7 +17,8 @@ namespace MovieApp.Infrastructure.Services
             _logger = logger;
         }
 
-        public async Task LogAsync(int userId, string action, string entityType, int? entityId, string details)
+        public async Task LogAsync(int userId, string action, string entityType, int? entityId,
+            string details, object previousState = null, object currentState = null)
         {
             var truncatedDetails = details.Length > 500 ? details.Substring(0, 500) : details;
             var auditLog = new AuditLog
@@ -25,9 +27,12 @@ namespace MovieApp.Infrastructure.Services
                 Action = action,
                 EntityType = entityType,
                 EntityId = entityId,
+                PreviousState = previousState != null ? JsonSerializer.Serialize(previousState) : null,
+                CurrentState = currentState != null ? JsonSerializer.Serialize(currentState) : null,
                 Details = truncatedDetails,
                 Timestamp = DateTime.UtcNow
             };
+
             try
             {
                 _context.AuditLogs.Add(auditLog);
@@ -38,6 +43,7 @@ namespace MovieApp.Infrastructure.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to save audit log");
+                throw; // Or handle differently based on your needs
             }
         }
     }

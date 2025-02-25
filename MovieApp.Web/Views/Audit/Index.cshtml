@@ -1,4 +1,7 @@
 ﻿@model IEnumerable<MovieApp.Domain.Entities.AuditLog>
+@{
+    ViewData["Title"] = "Audit Logs";
+}
 <h1>Audit Logs</h1>
 <table class="table">
     <thead>
@@ -7,6 +10,8 @@
             <th>Action</th>
             <th>Entity Type</th>
             <th>Entity ID</th>
+            <th>Previous State</th>
+            <th>Current State</th>
             <th>Details</th>
             <th>Timestamp</th>
         </tr>
@@ -16,10 +21,12 @@
         {
             <tr>
                 <td>@log.UserId</td>
-                <td>@log.Action</td>
-                <td>@log.EntityType</td>
+                <td>@(log.Action ?? "N/A")</td>
+                <td>@(log.EntityType ?? "N/A")</td>
                 <td>@log.EntityId</td>
-                <td>@log.Details</td>
+                <td>@(log.PreviousState ?? "N/A")</td>
+                <td>@(log.CurrentState ?? "N/A")</td>
+                <td>@(log.Details ?? "N/A")</td>
                 <td>@log.Timestamp</td>
             </tr>
         }
