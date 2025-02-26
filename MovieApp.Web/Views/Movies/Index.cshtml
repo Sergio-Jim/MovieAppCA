@@ -28,11 +28,11 @@
 </div>
 
 <!-- Modal for Deleting Movie -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+<div class="modal fade" id="movieDeleteModal" tabindex="-1" aria-labelledby="movieDeleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Confirm Movie Deletion</h5>
+                <h5 class="modal-title" id="movieDeleteModalLabel">Confirm Movie Deletion</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="deleteModalBody">
@@ -87,7 +87,7 @@
                                 '<a href="' + '@Url.Action("Details", "Movies")' + '?id=' + row.id + '" class="btn btn-sm btn-info details-movie">Details</a>';
                             if ('@isAdmin' === 'True') {
                                 actions += '<a href="' + '@Url.Action("Edit", "Movies")' + '?id=' + row.id + '" class="btn btn-sm btn-warning edit-movie">Edit</a>' +
-                                    '<button type="button" class="btn btn-sm btn-danger delete-movie" data-movie-id="' + row.id + '" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</button>';
+                                    '<button type="button" class="btn btn-sm btn-danger delete-movie" data-movie-id="'+row.id+'"> Delete</button>';
                             }
                             return actions;
                         },
@@ -150,17 +150,27 @@
                 window.location.href = url; // Navigate to the Edit page
             });
 
-            // Handle movie deletion modal
-            $('.delete-movie').click(function () {
-                var movieId = $(this).data('movie-id');
+
+            $(document).on('click', '.delete-movie', function (e) {
+                e.preventDefault();
+                 var movieId = $(this).data('movie-id');
+
+                console.log('Movie ID for deletion:'); // Debug log
                 $('#deleteMovieId').text(movieId);
                 $('#modalMovieId').val(movieId);
-                $('#deleteModal').modal('show');
+                // $('#movieDeleteModal').show();
+                $('#movieDeleteModal').modal('show');
             });
 
             // Confirm Delete Movie
             $('.confirm-delete-movie').click(function () {
                 var movieId = $('#modalMovieId').val();
+                console.log('Confirming deletion for Movie ID:', movieId); // Debug log
+                console.log('Form data:', {
+                    id: movieId,
+                    superAdminEmail: $('#superAdminEmailMovie').val(),
+                    superAdminPassword: $('#superAdminPasswordMovie').val()
+                });
                 var token = $('input[name="__RequestVerificationToken"]').val(); // Get CSRF token
                 $.ajax({
                     url: '@Url.Action("Delete", "Movies")',
@@ -172,6 +182,7 @@
                         __RequestVerificationToken: token
                     },
                     success: function (response) {
+                        console.log('Delete response:', response); // Debug log
                         if (response.success) {
                             Toastify({
                                 text: response.message,
@@ -180,7 +191,7 @@
                                 position: "right",
                                 backgroundColor: "green"
                             }).showToast();
-                            $('#deleteModal').modal('hide');
+                            $('#movieDeleteModal').modal('hide'); // Update to new modal ID
                             $('#moviesTable').DataTable().ajax.reload(); // Reload DataTable to reflect changes
                         } else {
                             Toastify({
@@ -193,6 +204,7 @@
                         }
                     },
                     error: function (xhr, status, error) {
+                        console.log('Delete error:', xhr, status, error); // Debug log
                         Toastify({
                             text: "Error deleting movie: " + error,
                             duration: 3000,

@@ -46,7 +46,7 @@ namespace MovieApp.Web.Controllers
 
             if (!string.IsNullOrEmpty(searchValue))
             {
-                searchValue = searchValue.ToLower().Replace("-", " ").Replace(" ", ""); // Normalize hyphens and spaces
+                searchValue = searchValue.ToLower().Replace("-", " ").Replace(" ", "");
                 moviesQuery = moviesQuery.Where(m =>
                     m.Title.ToLower().Replace("-", " ").Replace(" ", "").Contains(searchValue) ||
                     m.Genre.ToLower().Replace("-", " ").Replace(" ", "").Contains(searchValue) ||
@@ -61,7 +61,7 @@ namespace MovieApp.Web.Controllers
                 .Take(pageSize)
                 .Select(m => new
                 {
-                    id = m.Id,
+                    id = m.Id, // Ensure id is included
                     title = m.Title,
                     releaseDate = m.ReleaseDate.ToString("yyyy-MM-dd"),
                     genre = m.Genre,
