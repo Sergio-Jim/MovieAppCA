@@ -49,7 +49,15 @@ namespace MovieApp.Web.Controllers
             if (user == null) return NotFound();
 
             var currentRoles = await _userManager.GetRolesAsync(user);
-            var allRoles = new List<string> { "SuperAdmin", "Admin", "Viewer" }; // Define available roles
+            var allRoles = new List<string> { "SuperAdmin", "Admin", "Viewer" };
+            foreach (var role in allRoles)
+            {
+                if (!await _roleManager.RoleExistsAsync(role))
+                {
+                    await _roleManager.CreateAsync(new IdentityRole<int> { Name = role });
+                }
+            }
+
             var model = new EditRolesViewModel
             {
                 UserId = userId,
@@ -60,52 +68,36 @@ namespace MovieApp.Web.Controllers
                     IsSelected = currentRoles.Contains(role)
                 }).ToList()
             };
-            return View(model);
+            return PartialView("_EditRolesModal", model); // Return partial view for modal
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult EditRoles(EditRolesViewModel model)
-        {
-            if (!ModelState.IsValid) return View(model);
-
-            var selectedRoles = model.AvailableRoles.Where(r => r.IsSelected).Select(r => r.RoleName).ToList();
-            return RedirectToAction("UpdateRole", new RoleUpdateConfirmationDTO
-            {
-                UserId = model.UserId,
-                NewRole = string.Join(",", selectedRoles) // Pass roles as comma-separated string for confirmation
-            });
-        }
+        //-----Edit Roles
 
         [HttpGet]
         public IActionResult UpdateRole(int userId, string newRole)
         {
-            var model = new RoleUpdateConfirmationDTO
-            {
-                UserId = userId,
-                NewRole = newRole
-            };
-            return View(model);
+            return Json(new { success = true, userId = userId, newRole = newRole });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateRole(RoleUpdateConfirmationDTO model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+            {
+                return Json(new { success = false, errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
+            }
 
             var superAdmin = await _userManager.FindByEmailAsync(model.SuperAdminEmail);
             if (superAdmin == null || !await _userManager.IsInRoleAsync(superAdmin, "SuperAdmin"))
             {
-                ModelState.AddModelError("", "Invalid SuperAdmin email.");
-                return View(model);
+                return Json(new { success = false, errors = new[] { "Invalid SuperAdmin email." } });
             }
 
             var passwordCheck = await _signInManager.CheckPasswordSignInAsync(superAdmin, model.SuperAdminPassword, false);
             if (!passwordCheck.Succeeded)
             {
-                ModelState.AddModelError("", "Invalid SuperAdmin password.");
-                return View(model);
+                return Json(new { success = false, errors = new[] { "Invalid SuperAdmin password." } });
             }
 
             var user = await _userManager.FindByIdAsync(model.UserId.ToString());
@@ -115,14 +107,13 @@ namespace MovieApp.Web.Controllers
             if (result)
             {
                 await _auditService.LogAsync(superAdmin.Id, "UpdateUserRole", "User", model.UserId,
-                    $"Updated roles from {string.Join(", ", previousRoles)} to {model.NewRole}",
-                    previousRoles, newRoles); // previousRoles and newRoles are IList<string> and List<string>, which are compatible with object
+                    $"Updated roles from {string.Join(", ", previousRoles)} to {model.NewRole}", previousRoles, newRoles);
                 _logger.LogInformation("Role update successful for user ID {UserId}", model.UserId);
-                return RedirectToAction(nameof(Index));
+                return Json(new { success = true, message = "Roles updated successfully." });
             }
 
-            ModelState.AddModelError("", "Failed to update roles.");
-            return View(model);
+            _logger.LogWarning("Role update failed for user ID {UserId}", model.UserId);
+            return Json(new { success = false, errors = new[] { "Failed to update roles." } });
         }
 
         // Add Register User Action
@@ -187,11 +178,7 @@ namespace MovieApp.Web.Controllers
         [HttpGet]
         public IActionResult DeleteUser(int userId)
         {
-            var model = new UserDeletionConfirmationDTO
-            {
-                UserId = userId
-            };
-            return View(model);
+            return Json(new { success = true, userId = userId });
         }
 
         [HttpPost]
@@ -215,12 +202,10 @@ namespace MovieApp.Web.Controllers
                 return Json(new { success = false, errors = new[] { "Invalid SuperAdmin password." } });
             }
 
-            var user = await _userManager.FindByIdAsync(model.UserId.ToString()); // Fetch user before deletion
             var result = await _userManagementService.DeleteUserAsync(model.UserId);
             if (result)
             {
-                await _auditService.LogAsync(superAdmin.Id, "DeleteUser", "User", model.UserId,
-                    $"Deleted user: {user?.Email ?? "Unknown"}", user, null); // Previous state (user), no current state
+                await _auditService.LogAsync(superAdmin.Id, "DeleteUser", "User", model.UserId, "User deleted", null, null);
                 _logger.LogInformation("User ID {UserId} deleted successfully", model.UserId);
                 return Json(new { success = true, message = "User deleted successfully." });
             }
