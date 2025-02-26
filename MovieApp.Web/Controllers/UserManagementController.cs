@@ -161,15 +161,23 @@ namespace MovieApp.Web.Controllers
                     await _userManager.AddToRoleAsync(user, role);
                 }
                 var superAdmin = await _userManager.GetUserAsync(User);
+                var currentState = new
+                {
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Roles = selectedRoles
+                };
                 await _auditService.LogAsync(superAdmin.Id, "RegisterUser", "User", user.Id,
-                    $"Registered user with roles: {string.Join(", ", selectedRoles)}",
-                    null, selectedRoles); // null for previous state, selectedRoles as List<string>
+                    $"Registered user with email: {user.Email}", null, currentState);
+                // _logger.LogInformation("User {User} registered successfully", User);
                 return RedirectToAction(nameof(Index));
             }
 
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError("", error.Description);
+                // _logger.LogWarning("Failed to register user {User}", User);
             }
             return View(model);
         }
@@ -202,10 +210,20 @@ namespace MovieApp.Web.Controllers
                 return Json(new { success = false, errors = new[] { "Invalid SuperAdmin password." } });
             }
 
+            var user = await _userManager.FindByIdAsync(model.UserId.ToString()); // Fetch user before deletion
+            var previousRoles = await _userManager.GetRolesAsync(user);
+            var previousState = new
+            {
+                Email = user?.Email,
+                FirstName = user?.FirstName,
+                LastName = user?.LastName,
+                Roles = previousRoles
+            };
             var result = await _userManagementService.DeleteUserAsync(model.UserId);
             if (result)
             {
-                await _auditService.LogAsync(superAdmin.Id, "DeleteUser", "User", model.UserId, "User deleted", null, null);
+                await _auditService.LogAsync(superAdmin.Id, "DeleteUser", "User", model.UserId,
+                    $"Deleted user: {user?.Email ?? "Unknown"}", previousState, null);
                 _logger.LogInformation("User ID {UserId} deleted successfully", model.UserId);
                 return Json(new { success = true, message = "User deleted successfully." });
             }

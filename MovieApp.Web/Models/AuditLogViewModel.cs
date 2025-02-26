@@ -9,6 +9,8 @@
         public int? EntityId { get; set; }
         public string PreviousState { get; set; }
         public string CurrentState { get; set; }
+        public string PreviousStateJson { get; set; } // Raw JSON for search
+        public string CurrentStateJson { get; set; }   // Raw JSON for search
         public string Details { get; set; }
         public DateTime Timestamp { get; set; }
     }
