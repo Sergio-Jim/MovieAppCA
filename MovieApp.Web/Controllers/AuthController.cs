@@ -47,7 +47,6 @@ namespace MovieApp.Web.Controllers
             if (result.Succeeded)
             {
                 var user = await _userManager.FindByEmailAsync(model.Email);
-                await _auditService.LogAsync(user.Id, "Login", "User", user.Id, $"User {model.Email} logged in");
                 _logger.LogInformation("Redirecting to home after successful login");
                 return RedirectToAction("Index", "Home");
             }
@@ -78,6 +77,7 @@ namespace MovieApp.Web.Controllers
                 {
                     var user = await _userManager.FindByEmailAsync(model.Email);
                     await _auditService.LogAsync(user.Id, "Register", "User", user.Id, $"User {model.Email} registered");
+                    _logger.LogInformation("User {FirstName} successfully registered", user.FirstName);
                     // Automatically log in the user after registration
                     await _identityService.LoginAsync(new LoginDTO
                     {
@@ -101,11 +101,6 @@ namespace MovieApp.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user != null)
-            {
-                await _auditService.LogAsync(user.Id, "Logout", "User", user.Id, $"User {user.Email} logged out");
-            }
             await _identityService.LogoutAsync();
             return RedirectToAction("Login");
         }

@@ -1,56 +1,65 @@
 ﻿@model MovieApp.Domain.Entities.Movie
-
 @{
     ViewData["Title"] = "Edit Movie";
 }
 
-<div class="row">
-    <div class="col-md-8 offset-md-2">
-        <h2>Edit Movie</h2>
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
+<h1>Edit Movie</h1>
 
-            <div class="form-group mb-3">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="ReleaseDate" class="control-label"></label>
-                <input asp-for="ReleaseDate" class="form-control" type="date" />
-                <span asp-validation-for="ReleaseDate" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="Genre" class="control-label"></label>
-                <input asp-for="Genre" class="form-control" />
-                <span asp-validation-for="Genre" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="Price" class="control-label"></label>
-                <input asp-for="Price" class="form-control" />
-                <span asp-validation-for="Price" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="Rating" class="control-label"></label>
-                <input asp-for="Rating" class="form-control" />
-                <span asp-validation-for="Rating" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">Save</button>
-                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-            </div>
-        </form>
+<form asp-action="Edit" enctype="multipart/form-data" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="form-group mb-3">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
     </div>
-</div>
+    <div class="form-group mb-3">
+        <label asp-for="ReleaseDate" class="form-label"></label>
+        <input asp-for="ReleaseDate" class="form-control" />
+        <span asp-validation-for="ReleaseDate" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="Genre" class="form-label"></label>
+        <input asp-for="Genre" class="form-control" />
+        <span asp-validation-for="Genre" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="Price" class="form-label"></label>
+        <input asp-for="Price" class="form-control" />
+        <span asp-validation-for="Price" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="Rating" class="form-label"></label>
+        <input asp-for="Rating" class="form-control" />
+        <span asp-validation-for="Rating" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label class="form-label">Current Image</label>
+        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+        {
+            <img src="@Model.ImageUrl" alt="@Model.Title" style="width: 100px; height: auto;" class="mb-2" />
+        }
+        else
+        {
+            <p>No image uploaded.</p>
+        }
+    </div>
+   <div class="form-group mb-3">
+        <label for="imageFile" class="form-label">New Image</label>
+        <input type="file" name="imageFile" id="imageFile" class="form-control" accept="image/*" />
+    </div>
+    <div class="form-group mb-3">
+        <label class="form-label">Remove Current Image</label>
+        
+        <input type="checkbox" name="removeImage" id="removeImage" value="true" />
+        <label for="removeImage"> Remove Image</label>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    </div>
+</form>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }

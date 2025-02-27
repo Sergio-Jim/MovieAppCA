@@ -26,12 +26,19 @@ public class MovieRepository : IMovieRepository
 
     public async Task UpdateAsync(Movie movie)
     {
-        var entry = _context.Entry(movie);
-        if (entry.State == EntityState.Detached)
+        try
         {
-            _context.Movies.Update(movie); // Attach and update if detached
+            var entry = _context.Entry(movie);
+            if (entry.State == EntityState.Detached)
+            {
+                _context.Movies.Update(movie);
+            }
+            await _context.SaveChangesAsync();
         }
-        await _context.SaveChangesAsync();
+        catch (Exception ex)
+        {
+            throw; // Or handle differently based on your needs
+        }
     }
 
     public async Task DeleteAsync(int id)
