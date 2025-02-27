@@ -1,0 +1,150 @@
+﻿@model MovieApp.Web.Models.ProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<h1>My Profile</h1>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<form asp-action="UpdateProfile" method="post" id="profileForm">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="form-group mb-3">
+        <label asp-for="FirstName" class="form-label"></label>
+        <input asp-for="FirstName" class="form-control" />
+        <span asp-validation-for="FirstName" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="LastName" class="form-label"></label>
+        <input asp-for="LastName" class="form-control" />
+        <span asp-validation-for="LastName" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="UserName" class="form-label"></label>
+        <input asp-for="UserName" class="form-control" />
+        <span asp-validation-for="UserName" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+        @if (!Model.EmailConfirmed)
+        {
+            <button type="button" id="sendEmailVerification" class="btn btn-primary mt-2">Send Email Verification</button>
+        }
+        else
+        {
+            <span class="text-success">Email verified</span>
+        }
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="PhoneNumber" class="form-label"></label>
+        <input asp-for="PhoneNumber" class="form-control" />
+        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+        @if (!Model.PhoneNumberConfirmed && !string.IsNullOrEmpty(Model.PhoneNumber))
+        {
+            <button type="button" id="sendPhoneVerification" class="btn btn-primary mt-2">Send Phone Verification</button>
+        }
+        else if (Model.PhoneNumberConfirmed)
+        {
+            <span class="text-success">Phone verified</span>
+        }
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="TwoFactorEnabled" class="form-label"></label>
+        <input asp-for="TwoFactorEnabled" type="checkbox" class="form-check-input" />
+        <span asp-validation-for="TwoFactorEnabled" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a asp-action="Index" asp-controller="Home" class="btn btn-secondary">Back to Home</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            $('#sendEmailVerification').click(function () {
+                $.ajax({
+                    url: '@Url.Action("SendEmailVerification", "Profile")',
+                    type: 'POST',
+                    data: $('#profileForm').serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            Toastify({
+                                text: response.message,
+                                duration: 3000,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: "green"
+                            }).showToast();
+                        } else {
+                            Toastify({
+                                text: response.errors.join(', '),
+                                duration: 3000,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: "red"
+                            }).showToast();
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        Toastify({
+                            text: "Error sending email verification: " + error,
+                            duration: 3000,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "red"
+                        }).showToast();
+                    }
+                });
+            });
+
+            $('#sendPhoneVerification').click(function () {
+                $.ajax({
+                    url: '@Url.Action("SendPhoneVerification", "Profile")',
+                    type: 'POST',
+                    data: $('#profileForm').serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            Toastify({
+                                text: response.message,
+                                duration: 3000,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: "green"
+                            }).showToast();
+                        } else {
+                            Toastify({
+                                text: response.errors.join(', '),
+                                duration: 3000,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: "red"
+                            }).showToast();
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        Toastify({
+                            text: "Error sending phone verification: " + error,
+                            duration: 3000,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "red"
+                        }).showToast();
+                    }
+                });
+            });
+        });
+    </script>
+}
