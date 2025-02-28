@@ -55,10 +55,10 @@ builder.Services.ConfigureApplicationCookie(options =>
 var app = builder.Build();
 
 // Seed the database
-using (var scope = app.Services.CreateScope())
-{
-    await DataSeeder.SeedDataAsync(scope.ServiceProvider);
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    await DataSeeder.SeedDataAsync(scope.ServiceProvider);
+//}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

@@ -1,0 +1,176 @@
+﻿/* Define CSS variables for consistent theming */
+:root {
+    --primary-color: #3498db; /* A vibrant blue for accents */
+    --secondary-color: #2c3e50; /* Dark gray-blue for headers and buttons */
+    --accent-color: #e74c3c; /* Red for delete actions */
+    --background-color: #f8f9fa; /* Light gray background */
+    --text-color: #333; /* Dark text for readability */
+    --table-header-bg: #ecf0f1; /* Light gray for table headers */
+    --table-row-hover: #f1f1f1; /* Subtle hover effect for table rows */
+}
+
+/* General styles for the page */
+body {
+    font-family: 'Roboto', 'Helvetica', sans-serif; /* Modern, clean font */
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+/* Style the container as a card */
+.container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    margin-top: 20px;
+}
+
+/* Enhance the table */
+.table {
+    margin-top: 20px;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+    .table thead th {
+        background-color: var(--table-header-bg);
+        color: var(--secondary-color);
+        font-weight: bold;
+        text-align: left;
+        padding: 12px;
+        border-bottom: 2px solid var(--primary-color); /* Accent line */
+    }
+
+    .table tbody tr {
+        transition: background-color 0.3s ease; /* Smooth hover transition */
+    }
+
+        .table tbody tr:hover {
+            background-color: var(--table-row-hover); /* Highlight on hover */
+        }
+
+    .table img {
+        width: 50px;
+        height: auto;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow on images */
+    }
+
+/* Action buttons */
+.btn {
+    transition: background-color 0.3s ease; /* Smooth color transition */
+    border-radius: 4px;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border: none;
+}
+
+    .btn-primary:hover {
+        background-color: #2980b9; /* Slightly darker blue on hover */
+    }
+
+.btn-success {
+    background-color: #27ae60;
+    border: none;
+}
+
+    .btn-success:hover {
+        background-color: #219653;
+    }
+
+.btn-info {
+    background-color: #17a2b8;
+    border: none;
+}
+
+    .btn-info:hover {
+        background-color: #138496;
+    }
+
+.btn-warning {
+    background-color: #f39c12;
+    border: none;
+}
+
+    .btn-warning:hover {
+        background-color: #e67e22;
+    }
+
+.btn-danger {
+    background-color: var(--accent-color);
+    border: none;
+}
+
+    .btn-danger:hover {
+        background-color: #c0392b;
+    }
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    border: none;
+}
+
+    .btn-secondary:hover {
+        background-color: #34495e;
+    }
+
+/* Enhance the modal */
+.modal-content {
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Stronger shadow for prominence */
+    border: none;
+}
+
+.modal-header {
+    background-color: var(--primary-color);
+    color: white;
+    border-bottom: none;
+    padding: 15px 20px;
+}
+
+.modal-title {
+    font-weight: bold;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    border-top: none;
+    padding: 10px 20px;
+}
+
+/* Form inputs in the modal */
+.form-control {
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    transition: border-color 0.3s ease;
+}
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 5px rgba(52, 152, 219, 0.5); /* Subtle focus glow */
+    }
+
+/* Responsiveness */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .table img {
+        width: 40px; /* Slightly smaller images on mobile */
+    }
+
+    .modal-dialog {
+        margin: 10px;
+    }
+
+    .btn-sm {
+        font-size: 0.75rem; /* Smaller buttons on mobile */
+    }
+}

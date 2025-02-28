@@ -12,5 +12,9 @@ namespace MovieApp.Domain.Entities
         [Required]
         public DateTime CreatedAt { get; set; }
         public DateTime? LastLoginAt { get; set; }
+        //public bool EmailConfirmed { get; set; } = false; // Track email verification
+        //public string PhoneNumber { get; set; }
+        //public bool PhoneNumberConfirmed { get; set; } = false; // Track phone verification
+        //public bool TwoFactorEnabled { get; set; } = false; // Track 2FA status
     }
 }
